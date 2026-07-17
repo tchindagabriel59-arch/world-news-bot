@@ -277,7 +277,7 @@ Règles :
 def analyze_news(title: str, summary: str) -> dict | None:
     try:
         response = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="llama-3.1-8b-instant",
             messages=[
                 {"role": "system", "content": NEWS_ANALYSIS_PROMPT},
                 {"role": "user", "content": f"Titre: {title}\nContenu: {summary}"}
@@ -340,7 +340,7 @@ Rédige le briefing en français, en te basant sur TOUT ce contexte pour donner 
 
     try:
         response = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="llama-3.1-8b-instant",
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user", "content": user}
@@ -544,7 +544,13 @@ def run():
         log.info("🔍 Vérification des nouvelles news...")
         all_news = fetch_all_news()
 
+        analyses_this_cycle = 0
+        MAX_ANALYSES_PER_CYCLE = 5
+
         for news in all_news:
+            if analyses_this_cycle >= MAX_ANALYSES_PER_CYCLE:
+                log.info("⏸️ Limite d'analyses atteinte pour ce cycle — pause au prochain")
+                break
             news_id = hash_news(news["title"])
 
             if news_id in seen:
@@ -572,7 +578,9 @@ def run():
             log.info(f"⭐ News fort impact détectée : {title[:80]}")
 
             # Analyse IA complète
+            time.sleep(3)  # Délai pour éviter le rate limit Groq
             analysis = analyze_news(title, summary)
+            analyses_this_cycle += 1
 
             if not analysis:
                 seen.add(news_id)
