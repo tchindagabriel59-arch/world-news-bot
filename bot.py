@@ -277,7 +277,7 @@ Règles :
 def analyze_news(title: str, summary: str) -> dict | None:
     try:
         response = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="qwen/qwen3-32b",
             messages=[
                 {"role": "system", "content": NEWS_ANALYSIS_PROMPT},
                 {"role": "user", "content": f"Titre: {title}\nContenu: {summary}"}
@@ -340,7 +340,7 @@ Rédige le briefing en français, en te basant sur TOUT ce contexte pour donner 
 
     try:
         response = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="qwen/qwen3-32b",
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user", "content": user}
