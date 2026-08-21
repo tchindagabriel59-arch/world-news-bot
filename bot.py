@@ -286,6 +286,29 @@ def analyze_news(title: str, summary: str) -> dict | None:
             max_tokens=500,
         )
         raw = response.choices[0].message.content.strip()
+        # Nettoyage robuste du JSON
+        if "```" in raw:
+            raw = raw.split("```")[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+        raw = raw.strip()
+        # Trouve le premier { et le dernier }
+        start = raw.find("{")
+        end = raw.rfind("}") + 1
+        if start != -1 and end > start:
+            raw = raw[start:end]
+        return json.loads(raw)
+    except Exception as e:
+        log.error(f"❌ Erreur analyse IA: {e}")
+        return None
+            messages=[
+                {"role": "system", "content": NEWS_ANALYSIS_PROMPT},
+                {"role": "user", "content": f"Titre: {title}\nContenu: {summary}"}
+            ],
+            temperature=0.1,
+            max_tokens=500,
+        )
+        raw = response.choices[0].message.content.strip()
         raw = raw.replace("```json", "").replace("```", "").strip()
         return json.loads(raw)
     except Exception as e:
@@ -348,8 +371,16 @@ Rédige le briefing en français, en te basant sur TOUT ce contexte pour donner 
             temperature=0.3,
             max_tokens=1500,
         )
-        raw = response.choices[0].message.content.strip()
-        raw = raw.replace("```json", "").replace("```", "").strip()
+                raw = response.choices[0].message.content.strip()
+        if "```" in raw:
+            raw = raw.split("```")[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+        raw = raw.strip()
+        start = raw.find("{")
+        end = raw.rfind("}") + 1
+        if start != -1 and end > start:
+            raw = raw[start:end]
         return json.loads(raw)
     except Exception as e:
         log.error(f"❌ Erreur génération briefing: {e}")
