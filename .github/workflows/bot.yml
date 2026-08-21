@@ -10,14 +10,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      - name: Restore cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            seen_news.json
+            market_context.json
+          key: bot-data-cache
+          restore-keys: bot-data-cache
+
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
+
       - name: Install dependencies
         run: pip install -r requirements.txt
+
       - name: Run bot for 55 minutes
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: timeout 3300 python bot.py || true
+
+      - name: Save cache
+        if: always()
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            seen_news.json
+            market_context.json
+          key: bot-data-cache-${{ github.run_id }}
