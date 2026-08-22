@@ -87,8 +87,6 @@ groq_client = Groq(api_key=GROQ_API_KEY)
 
 def clean_json(raw: str) -> str:
     """Nettoie la réponse du modèle pour extraire le JSON valide"""
-    if not raw or not raw.strip():
-        return ""
     # Supprime les balises <think>...</think>
     if "<think>" in raw:
         raw = raw.split("</think>")[-1].strip()
@@ -234,9 +232,7 @@ def analyze_news(title: str, summary: str) -> dict:
             max_tokens=400,
         )
         raw = response.choices[0].message.content.strip()
-                raw = clean_json(raw)
-        if not raw:
-            return None
+        raw = clean_json(raw)
         return json.loads(raw)
     except Exception as e:
         log.error(f"❌ Erreur analyse IA: {e}")
@@ -279,9 +275,7 @@ Redige le briefing en francais."""
             max_tokens=1500,
         )
         raw = response.choices[0].message.content.strip()
-                raw = clean_json(raw)
-        if not raw:
-            return None
+        raw = clean_json(raw)
         return json.loads(raw)
     except Exception as e:
         log.error(f"❌ Erreur generation briefing: {e}")
